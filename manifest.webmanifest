@@ -1,0 +1,19 @@
+{
+  "name": "Color Match Puzzle",
+  "short_name": "Color Match",
+  "description": "A colorful match-three puzzle game.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#11152f",
+  "theme_color": "#171c3a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

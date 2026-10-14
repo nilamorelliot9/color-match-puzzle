@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#171c3a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Color Match Puzzle</title>
+<style>
+  :root { --bg:#11152f; --panel:#20264b; --text:#f7f7ff; --muted:#b9c1ee; --accent:#ffd166; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:radial-gradient(circle at top,#303b79 0,#171c3a 48%,#0c1025 100%); display:flex; justify-content:center; padding:18px 12px 28px; }
+  .app { width:min(100%,480px); }
+  header { text-align:center; margin:8px 0 16px; }
+  .eyebrow { color:#9ce7ff; text-transform:uppercase; letter-spacing:.16em; font-size:.72rem; font-weight:800; }
+  h1 { margin:5px 0 4px; font-size:clamp(1.8rem,7vw,2.5rem); line-height:1.05; }
+  .subtitle { color:var(--muted); font-size:.92rem; margin:0; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+  .stat { background:rgba(32,38,75,.92); border:1px solid rgba(255,255,255,.1); border-radius:15px; padding:10px 6px; text-align:center; }
+  .stat-label { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; }
+  .stat-value { font-size:1.3rem; font-weight:850; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .target-line { display:flex; justify-content:space-between; gap:12px; font-size:.86rem; color:var(--muted); margin:0 2px 7px; }
+  .bar { height:8px; background:#090d22; border-radius:99px; overflow:hidden; margin-bottom:14px; }
+  .bar-fill { height:100%; width:0%; background:linear-gradient(90deg,#5efce8,#a3ff72); transition:width .25s; }
+  .board-wrap { background:rgba(8,12,34,.68); border:1px solid rgba(255,255,255,.12); border-radius:20px; padding:9px; box-shadow:0 18px 45px rgba(0,0,0,.28); }
+  #board { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:5px; touch-action:manipulation; }
+  .tile { border:0; aspect-ratio:1; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:clamp(1.15rem,5.7vw,1.8rem);
+    cursor:pointer; box-shadow:inset 0 -4px 0 rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.38); transition:transform .12s,filter .12s; padding:0; user-select:none; }
+  .tile:active { transform:scale(.93); }
+  .tile.selected { outline:3px solid white; outline-offset:1px; transform:scale(.92); filter:brightness(1.16); }
+  .tile.empty { visibility:hidden; }
+  .tile:focus-visible,button:focus-visible { outline:3px solid white; outline-offset:3px; }
+  .controls { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:13px; }
+  .action { border:0; border-radius:13px; padding:12px 10px; font-weight:800; font-size:.94rem; cursor:pointer; color:#151932; background:var(--accent); }
+  .action.secondary { color:var(--text); background:#303963; border:1px solid rgba(255,255,255,.14); }
+  .message { min-height:47px; margin-top:12px; border-radius:13px; padding:12px; background:rgba(32,38,75,.75); color:#e6eaff; text-align:center; font-size:.9rem; }
+  .howto { color:var(--muted); font-size:.82rem; line-height:1.5; margin:13px 4px 0; text-align:center; }
+  .overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(4,7,20,.78); z-index:5; }
+  .overlay.show { display:flex; }
+  .modal { width:min(100%,360px); padding:24px; text-align:center; border-radius:22px; background:#20264b; border:1px solid rgba(255,255,255,.15); box-shadow:0 24px 80px #0008; }
+  .modal h2 { margin:0 0 8px; font-size:1.8rem; }
+  .modal p { color:var(--muted); line-height:1.5; }
+  @media (min-width:430px) { #board { gap:6px; } .board-wrap { padding:11px; } }
+  @media (prefers-reduced-motion:reduce) { * { transition:none!important; } }
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="eyebrow">A quick brain break</div>
+    <h1>🌈 Color Match</h1>
+    <p class="subtitle">Match 3 or more tiles to reach the target!</p>
+  </header>
+  <section class="stats" aria-label="Game statistics">
+    <div class="stat"><div class="stat-label">Level</div><div class="stat-value" id="level">1</div></div>
+    <div class="stat"><div class="stat-label">Score</div><div class="stat-value" id="score">0</div></div>
+    <div class="stat"><div class="stat-label">Moves left</div><div class="stat-value" id="moves">25</div></div>
+  </section>
+  <div class="target-line"><span>Target score</span><strong id="targetText">500</strong></div>
+  <div class="bar"><div class="bar-fill" id="progress"></div></div>
+  <section class="board-wrap" aria-label="Puzzle board">
+    <div id="board" role="grid" aria-label="Eight by eight color matching puzzle"></div>
+  </section>
+  <div class="controls">
+    <button class="action" id="newGame">↻ New Game</button>
+    <button class="action secondary" id="soundBtn" aria-pressed="false">🔊 Sound: Off</button>
+  </div>
+  <div class="message" id="message" role="status" aria-live="polite">Tap a tile, then tap an adjacent tile to swap.</div>
+  <p class="howto">How to play: swap neighboring tiles to make a row or column of 3 or more matching colors. Each match earns points. Reach the target before you run out of moves.</p>
+</main>
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <h2 id="modalTitle">Level complete!</h2>
+    <p id="modalText">Great matching!</p>
+    <button class="action" id="continueBtn">Continue</button>
+  </div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const SIZE = 8;
+  const COLORS = [
+    {name:'Ruby', emoji:'🔴', bg:'linear-gradient(145deg,#ff8a9b,#ed315b)'},
+    {name:'Sun', emoji:'🟡', bg:'linear-gradient(145deg,#fff09a,#ffbf36)'},
+    {name:'Ocean', emoji:'🔵', bg:'linear-gradient(145deg,#91e4ff,#3184ff)'},
+    {name:'Leaf', emoji:'🟢', bg:'linear-gradient(145deg,#a5ffb5,#24b86a)'},
+    {name:'Grape', emoji:'🟣', bg:'linear-gradient(145deg,#d8a6ff,#8d4ee8)'},
+    {name:'Orange', emoji:'🟠', bg:'linear-gradient(145deg,#ffd0a1,#ff8733)'}
+  ];
+  const boardEl = document.getElementById('board');
+  const scoreEl = document.getElementById('score');
+  const movesEl = document.getElementById('moves');
+  const levelEl = document.getElementById('level');
+  const targetText = document.getElementById('targetText');
+  const progressEl = document.getElementById('progress');
+  const messageEl = document.getElementById('message');
+  const overlay = document.getElementById('overlay');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalText = document.getElementById('modalText');
+  const continueBtn = document.getElementById('continueBtn');
+  const soundBtn = document.getElementById('soundBtn');
+  let board = [], selected = null, score = 0, moves = 25, level = 1, target = 500;
+  let busy = false, soundOn = false, audioCtx = null, gameOver = false;
+
+  const randColor = () => Math.floor(Math.random() * COLORS.length);
+  const idx = (r,c) => r * SIZE + c;
+  const adjacent = (a,b) => {
+    const ar=Math.floor(a/SIZE), ac=a%SIZE, br=Math.floor(b/SIZE), bc=b%SIZE;
+    return Math.abs(ar-br)+Math.abs(ac-bc)===1;
+  };
+  function playTone(freq=500, duration=.07) {
+    if (!soundOn) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.frequency.value = freq; osc.type = 'sine'; gain.gain.value = .045;
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
+      gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + duration);
+      osc.stop(audioCtx.currentTime + duration);
+    } catch (_) {}
+  }
+  function findMatches(arr=board) {
+    const found = new Set();
+    for (let r=0;r<SIZE;r++) {
+      let start=0;
+      while (start<SIZE) {
+        const v=arr[idx(r,start)];
+        if (v===null || v===undefined) { start++; continue; }
+        let end=start+1;
+        while(end<SIZE && arr[idx(r,end)]===v) end++;
+        if(end-start>=3) for(let c=start;c<end;c++) found.add(idx(r,c));
+        start=end;
+      }
+    }
+    for (let c=0;c<SIZE;c++) {
+      let start=0;
+      while(start<SIZE) {
+        const v=arr[idx(start,c)];
+        if(v===null || v===undefined) { start++; continue; }
+        let end=start+1;
+        while(end<SIZE && arr[idx(end,c)]===v) end++;
+        if(end-start>=3) for(let r=start;r<end;r++) found.add(idx(r,c));
+        start=end;
+      }
+    }
+    return found;
+  }
+  function makeBoard() {
+    board = Array(SIZE*SIZE).fill(0);
+    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) {
+      let v, attempts=0;
+      do {
+        v=randColor(); attempts++;
+      } while(attempts<30 && (
+        (c>=2 && board[idx(r,c-1)]===v && board[idx(r,c-2)]===v) ||
+        (r>=2 && board[idx(r-1,c)]===v && board[idx(r-2,c)]===v)
+      ));
+      board[idx(r,c)]=v;
+    }
+  }
+  function render() {
+    boardEl.innerHTML='';
+    board.forEach((v,i) => {
+      const b=document.createElement('button');
+      b.className='tile'+(selected===i?' selected':'')+(v===null?' empty':'');
+      b.type='button'; b.dataset.index=i;
+      b.setAttribute('role','gridcell');
+      if(v!==null) {
+        b.textContent=COLORS[v].emoji;
+        b.style.background=COLORS[v].bg;
+        b.setAttribute('aria-label', `${COLORS[v].name} tile, row ${Math.floor(i/SIZE)+1}, column ${i%SIZE+1}`);
+      } else { b.textContent=''; b.setAttribute('aria-label','Empty tile'); }
+      b.disabled=busy || gameOver || v===null;
+      b.addEventListener('click',()=>handleTile(i));
+      boardEl.appendChild(b);
+    });
+    scoreEl.textContent=score.toLocaleString();
+    movesEl.textContent=moves;
+    levelEl.textContent=level;
+    targetText.textContent=target.toLocaleString();
+    progressEl.style.width=Math.min(100, score/target*100)+'%';
+  }
+  function say(msg) { messageEl.textContent=msg; }
+  function handleTile(i) {
+    if(busy || gameOver || board[i]===null) return;
+    playTone(430);
+    if(selected===null) { selected=i; render(); say('Now tap a neighboring tile to swap.'); return; }
+    if(selected===i) { selected=null; render(); say('Selection cleared. Pick a tile.'); return; }
+    if(!adjacent(selected,i)) { selected=i; render(); say('Choose a tile next to the selected one.'); return; }
+    const a=selected, b=i; selected=null;
+    [board[a],board[b]]=[board[b],board[a]];
+    const matches=findMatches();
+    if(matches.size===0) {
+      [board[a],board[b]]=[board[b],board[a]];
+      render(); say('That swap did not make a match. Try another pair.'); playTone(220);
+      return;
+    }
+    moves--; busy=true; render();
+    say('Nice match! Clearing tiles…');
+    setTimeout(()=>resolveMatches(),180);
+  }
+  function resolveMatches() {
+    const matches=findMatches();
+    if(matches.size===0) { busy=false; render(); finishMove(); return; }
+    score += matches.size * 10 * level;
+    playTone(620 + Math.min(matches.size,8)*45);
+    matches.forEach(i=>board[i]=null);
+    render();
+    setTimeout(()=>{
+      for(let c=0;c<SIZE;c++) {
+        const remaining=[];
+        for(let r=SIZE-1;r>=0;r--) {
+          const v=board[idx(r,c)];
+          if(v!==null) remaining.push(v);
+        }
+        for(let r=SIZE-1,k=0;r>=0;r--,k++) board[idx(r,c)] = k<remaining.length ? remaining[k] : randColor();
+      }
+      render();
+      setTimeout(resolveMatches,160);
+    },180);
+  }
+  function finishMove() {
+    if(score>=target) {
+      gameOver=true;
+      modalTitle.textContent='🎉 Level complete!';
+      modalText.textContent=`You reached ${score.toLocaleString()} points. Ready for the next challenge?`;
+      continueBtn.textContent='Next Level';
+      overlay.classList.add('show');
+      return;
+    }
+    if(moves<=0) {
+      gameOver=true;
+      modalTitle.textContent='💪 Good try!';
+      modalText.textContent=`You scored ${score.toLocaleString()} of ${target.toLocaleString()} points. Give it another go!`;
+      continueBtn.textContent='Try Again';
+      overlay.classList.add('show');
+      return;
+    }
+    say(`Keep going! ${Math.max(0,target-score).toLocaleString()} more points to reach the target.`);
+  }
+  function startLevel(nextLevel=1) {
+    level=nextLevel; score=0; moves=Math.max(18,25-(level-1)); target=500+(level-1)*300;
+    selected=null; busy=false; gameOver=false; overlay.classList.remove('show');
+    makeBoard(); render(); say(`Level ${level}: reach ${target.toLocaleString()} points in ${moves} moves.`);
+  }
+  document.getElementById('newGame').addEventListener('click',()=>startLevel(1));
+  soundBtn.addEventListener('click',()=>{
+    soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound: On':'🔊 Sound: Off';
+    soundBtn.setAttribute('aria-pressed',String(soundOn)); if(soundOn) playTone(660);
+  });
+  continueBtn.addEventListener('click',()=>{
+    if(score>=target) startLevel(level+1); else startLevel(level);
+  });
+  startLevel(1);
+})();
+</script>
+
+<script>
+/* Stage 2: locally save non-sensitive game progress on this device.
+   This is not an account, a secure leaderboard, or proof of a cash reward. */
+(() => {
+  const KEY = 'colorMatchPuzzleSaveV1';
+  const safeRead = () => {
+    try {
+      const v = JSON.parse(localStorage.getItem(KEY) || '{}');
+      return {
+        bestScore: Number.isFinite(v.bestScore) ? Math.max(0, v.bestScore) : 0,
+        highestLevel: Number.isFinite(v.highestLevel) ? Math.max(1, v.highestLevel) : 1
+      };
+    } catch (_) { return {bestScore:0, highestLevel:1}; }
+  };
+  const save = () => {
+    const scoreEl = document.getElementById('score');
+    const levelEl = document.getElementById('level');
+    if (!scoreEl || !levelEl) return;
+    const score = Number((scoreEl.textContent || '0').replaceAll(',', '')) || 0;
+    const level = Number(levelEl.textContent || '1') || 1;
+    const old = safeRead();
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        bestScore: Math.max(old.bestScore, score),
+        highestLevel: Math.max(old.highestLevel, level)
+      }));
+    } catch (_) {}
+    const best = document.getElementById('bestScore');
+    const topLevel = document.getElementById('highestLevel');
+    if (best) best.textContent = Math.max(old.bestScore, score).toLocaleString();
+    if (topLevel) topLevel.textContent = Math.max(old.highestLevel, level);
+  };
+  const showSavedStats = () => {
+    const data = safeRead();
+    const best = document.getElementById('bestScore');
+    const topLevel = document.getElementById('highestLevel');
+    if (best) best.textContent = data.bestScore.toLocaleString();
+    if (topLevel) topLevel.textContent = data.highestLevel;
+  };
+  window.addEventListener('DOMContentLoaded', () => {
+    const stats = document.createElement('section');
+    stats.className = 'stats';
+    stats.innerHTML = '<div class="stat"><div class="stat-label">Best score</div><div class="stat-value" id="bestScore">0</div></div><div class="stat"><div class="stat-label">Highest level</div><div class="stat-value" id="highestLevel">1</div></div><div class="stat"><div class="stat-label">Saved on</div><div class="stat-value" style="font-size:.95rem">This device</div></div>';
+    const existing = document.querySelector('.stats');
+    if (existing) existing.insertAdjacentElement('afterend', stats);
+    showSavedStats();
+    const observer = new MutationObserver(save);
+    ['score','level'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el, {childList:true, characterData:true, subtree:true});
+    });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
+    window.addEventListener('pagehide', save);
+    // Catch score/level updates even if the UI mutates quickly.
+    setInterval(save, 1500);
+  });
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.warn)); }
+</script>
+</body>
+</html>
