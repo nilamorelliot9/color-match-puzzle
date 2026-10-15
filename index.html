@@ -3,63 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tropic Fruit Pop - A Quick Brain Break</title>
+<title>Tropic Fruit Pop - Original</title>
 <style>
-  *{box-sizing:border-box;font-family:system-ui}
-  body{margin:0;min-height:100vh;background:radial-gradient(1200px 600px at 50% -10%,#1e40af,#0f172a);color:#e2e8f0;display:flex;flex-direction:column;align-items:center;padding:16px}
-  header{max-width:900px;width:100%;display:flex;justify-content:space-between;align-items:center;margin:8px 0 16px;flex-wrap:wrap;gap:10px}
- .logo{font-weight:800;font-size:22px}
- .stats{display:flex;gap:10px;flex-wrap:wrap}
- .stat{background:#ffffff12;border:1px solid #ffffff18;padding:8px 14px;border-radius:12px;text-align:center;min-width:86px}
- .stat b{display:block;font-size:18px;color:#f8fafc}
- .stat small{font-size:11px;opacity:.8}
- .board-wrap{background:#0b1228cc;border:1px solid #ffffff14;border-radius:20px;padding:14px;box-shadow:0 20px 40px #00000066}
-  #board{display:grid;grid-template-columns:repeat(8,56px);grid-template-rows:repeat(8,56px);gap:6px}
- .tile{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;transition:transform.12s;box-shadow:inset 0 2px 0 #ffffff55,0 4px 10px #00000044}
- .tile.selected{transform:scale(1.08);outline:3px solid #22d3ee}
- .tile.pop{animation:pop.3s forwards}
-  @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(0)}}
- .controls{margin-top:16px;display:flex;gap:10px}
-  button{background:#22d3ee;color:#0f172a;border:0;padding:10px 18px;border-radius:12px;font-weight:700;cursor:pointer}
-  button.secondary{background:#ffffff14;color:#e2e8f0;border:1px solid #ffffff22}
-  #msg{margin-top:12px;font-weight:600;color:#7dd3fc;text-align:center}
-  footer{margin-top:18px;font-size:12px;opacity:.6;text-align:center;max-width:700px}
-  @media(max-width:600px){#board{grid-template-columns:repeat(8,11.2vw);grid-template-rows:repeat(8,11.2vw);gap:1.2vw}.tile{width:11.2vw;height:11.2vw;font-size:6.5vw;border-radius:3vw}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui;background:linear-gradient(135deg,#1e3a8a,#3b82f6);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;padding:10px}
+.header{width:100%;max-width:420px;text-align:center}
+h1{font-size:24px;margin:10px 0}
+.badge{background:#22d3ee;color:#000;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:bold;margin-left:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px 0}
+.stat{background:rgba(255,255,255,0.15);padding:8px;border-radius:10px;text-align:center}
+.stat b{display:block;font-size:18px}
+#board{width:100%;max-width:400px;aspect-ratio:1;background:rgba(0,0,0,0.3);border-radius:16px;padding:8px;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);gap:4px}
+.cell{background:#fefce8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer}
+.cell.selected{outline:3px solid #facc15}
+.controls{margin-top:12px;display:flex;gap:10px}
+button{padding:10px 18px;border:none;border-radius:20px;font-weight:bold}
+.new{background:#38bdf8;color:#000}
+.hint{background:rgba(255,255,255,0.2);color:#fff}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">🍉 Tropic Fruit Pop <span style="font-size:11px;background:#22d3ee;color:#0f172a;padding:2px 6px;border-radius:6px">ORIGINAL</span></div>
-  <div class="stats">
-    <div class="stat"><small>LEVEL</small><b id="level">1</b></div>
-    <div class="stat"><small>SCORE</small><b id="score">0</b></div>
-    <div class="stat"><small>MOVES LEFT</small><b id="moves">25</b></div>
-    <div class="stat"><small>TARGET</small><b id="target">1200</b></div>
-  </div>
-</header>
-<div class="board-wrap"><div id="board"></div></div>
-<div id="msg">Match 3 or more fruits! 4-match = bonus!</div>
-<div class="controls">
-  <button id="newBtn">New Game</button>
-  <button class="secondary" id="hintBtn">Hint</button>
-  <button class="secondary" onclick="location.href='privacy.html'">Privacy</button>
+<div class="header">
+<h1>🍉 Tropic Fruit Pop <span class="badge">ORIGINAL</span></h1>
+<div class="stats">
+<div class="stat">LEVEL<b id="level">1</b></div>
+<div class="stat">SCORE<b id="score">0</b></div>
+<div class="stat">MOVES<b id="moves">25</b></div>
+<div class="stat">TARGET<b id="target">1200</b></div>
 </div>
-<footer>Tropic Fruit Pop is 100% original. No affiliation with Candy Crush. <br><a href="privacy.html" style="color:#7dd3fc">Privacy</a> | <a href="about.html" style="color:#7dd3fc">About</a></footer>
+</div>
+<div id="board"></div>
+<div class="controls">
+<button class="new" onclick="initGame()">New Game</button>
+<button class="hint" onclick="showHint()">Hint</button>
+<button class="hint" onclick="alert('Tropic Fruit Pop is 100% original.')">Privacy</button>
+</div>
+<p style="margin-top:12px;font-size:13px">Match 3 or more fruits! 4-match = bonus!</p>
 <script>
-const FRUITS=[{e:'🍓',b:'#ff5a6a'},{e:'🍊',b:'#ff9f1c'},{e:'🍏',b:'#7bed7b'},{e:'🫐',b:'#5d8cff'},{e:'🍌',b:'#ffe066'},{e:'🍒',b:'#ff2d55'},{e:'🍇',b:'#9b5cff'},{e:'🍉',b:'#2ec4b6'}];
-const ROWS=8,COLS=8;let board=[],selected=null,score=0,moves=25,level=1,target=1200,busy=false;
-const boardEl=document.getElementById('board'),scoreEl=document.getElementById('score'),movesEl=document.getElementById('moves'),levelEl=document.getElementById('level'),targetEl=document.getElementById('target'),msgEl=document.getElementById('msg');
-function rand(){return Math.floor(Math.random()*FRUITS.length)}
-function createBoard(){board=[];for(let r=0;r<ROWS;r++){board[r]=[];for(let c=0;c<COLS;c++){let f;do{f=rand()}while((c>=2&&board[r][c-1]===f&&board[r][c-2]===f)||(r>=2&&board[r-1][c]===f&&board[r-2][c]===f));board[r][c]=f}}}
-function render(){boardEl.innerHTML='';for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const d=document.createElement('div');d.className='tile';if(selected&&selected.r===r&&selected.c===c)d.classList.add('selected');const fr=FRUITS[board[r][c]];d.style.background=fr.b;d.textContent=fr.e;d.onclick=()=>onTile(r,c);boardEl.appendChild(d)}}
-function onTile(r,c){if(busy)return;if(!selected){selected={r,c};render();return}const dr=Math.abs(selected.r-r),dc=Math.abs(selected.c-c);if((dr===1&&dc===0)||(dr===0&&dc===1))swap(selected.r,selected.c,r,c);else{selected={r,c};render()}}
-function swap(r1,c1,r2,c2){[board[r1][c1],board[r2][c2]]=[board[r2][c2],board[r1][c1]];render();const m=find();if(m.length){moves--;movesEl.textContent=moves;proc(m);selected=null}else{[board[r1][c1],board[r2][c2]]=[board[r2][c2],board[r1][c1]];msgEl.textContent='No match!';render();selected=null;setTimeout(()=>msgEl.textContent='Match 3 or more fruits!',800)}}
-function find(){const s=new Set();for(let r=0;r<ROWS;r++){let k=1;for(let c=1;c<COLS;c++){if(board[r][c]===board[r][c-1])k++;else{if(k>=3)for(let x=c-k;x<c;x++)s.add(r+','+x);k=1} }if(k>=3)for(let x=COLS-k;x<COLS;x++)s.add(r+','+x)}for(let c=0;c<COLS;c++){let k=1;for(let r=1;r<ROWS;r++){if(board[r][c]===board[r-1][c])k++;else{if(k>=3)for(let x=r-k;x<r;x++)s.add(x+','+c);k=1} }if(k>=3)for(let x=ROWS-k;x<ROWS;x++)s.add(x+','+c)}return [...s].map(v=>{const[r,c]=v.split(',').map(Number);return{r,c}})}
-async function proc(matches){if(!matches.length)return;busy=true;const tiles=document.querySelectorAll('.tile');matches.forEach(m=>tiles[m.r*COLS+m.c]?.classList.add('pop'));score+=matches.length*100+(matches.length>=4?200:0);scoreEl.textContent=score;msgEl.textContent=matches.length>=4?'Juicy! +'+matches.length:'Nice! +'+matches.length;await new Promise(r=>setTimeout(r,320));for(const m of matches)board[m.r][m.c]=null;for(let c=0;c<COLS;c++){let w=ROWS-1;for(let r=ROWS-1;r>=0;r--)if(board[r][c]!==null){board[w][c]=board[r][c];w--}for(let r=w;r>=0;r--)board[r][c]=rand()}render();const n=find();if(n.length){await new Promise(r=>setTimeout(r,150));await proc(n)}else{busy=false;if(score>=target){level++;levelEl.textContent=level;target+=400;targetEl.textContent=target;moves+=8;movesEl.textContent=moves;msgEl.textContent='Level up! Level '+level}}}}
-function newGame(){score=0;moves=25;level=1;target=1200;scoreEl.textContent=0;movesEl.textContent=25;levelEl.textContent=1;targetEl.textContent=1200;createBoard();render();msgEl.textContent='Match 3 or more fruits!';busy=false;selected=null}
-document.getElementById('newBtn').onclick=newGame;
-document.getElementById('hintBtn').onclick=()=>{for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)for(const[dr,dc]of[[1,0],[0,1]]){const nr=r+dr,nc=c+dc;if(nr>=ROWS||nc>=COLS)continue;[board[r][c],board[nr][nc]]=[board[nr][nc],board[r][c]];const mm=find();[board[r][c],board[nr][nc]]=[board[nr][nc],board[r][c]];if(mm.length){selected={r,c};render();msgEl.textContent='Hint!';setTimeout(()=>{selected=null;render()},1200);return}}msgEl.textContent='Shuffling...';createBoard();render()}
-createBoard();render();
+const FRUITS=['🍓','🍉','🍊','🍇'];const SIZE=8;let board=[],selected=null,score=0,level=1,moves=25,target=1200;
+function randFruit(){return FRUITS[Math.floor(Math.random()*FRUITS.length)]}
+function createBoard(){board=[];for(let r=0;r<SIZE;r++){let row=[];for(let c=0;c<SIZE;c++){let f;do{f=randFruit();}while((c>=2&&row[c-1]===f&&row[c-2]===f)||(r>=2&&board[r-1][c]===f&&board[r-2][c]===f));row.push(f);}board.push(row);}}
+function render(){const b=document.getElementById('board');b.innerHTML='';for(let r=0;r<SIZE;r++){for(let c=0;c<SIZE;c++){const d=document.createElement('div');d.className='cell';d.textContent=board[r][c];d.onclick=()=>onCell(r,c);if(selected&&selected.r===r&&selected.c===c)d.classList.add('selected');b.appendChild(d);}}document.getElementById('score').textContent=score;document.getElementById('level').textContent=level;document.getElementById('moves').textContent=moves;document.getElementById('target').textContent=target;}
+function onCell(r,c){if(!selected){selected={r,c};render();return;}const dr=Math.abs(selected.r-r),dc=Math.abs(selected.c-c);if((dr===1&&dc===0)||(dr===0&&dc===1)){swap(selected.r,selected.c,r,c);if(!findMatches().length){swap(r,c,selected.r,selected.c);}else{moves--;doCascade();}selected=null;}else{selected={r,c};}render();}
+function swap(r1,c1,r2,c2){let t=board[r1][c1];board[r1][c1]=board[r2][c2];board[r2][c2]=t;}
+function findMatches(){let m=[];for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE-2;c++)if(board[r][c]&&board[r][c]===board[r][c+1]&&board[r][c]===board[r][c+2]){let k=c;while(k<SIZE&&board[r][k]===board[r][c])k++;for(let i=c;i<k;i++)m.push([r,i]);c=k;}for(let c=0;c<SIZE;c++)for(let r=0;r<SIZE-2;r++)if(board[r][c]&&board[r][c]===board[r+1][c]&&board[r][c]===board[r+2][c]){let k=r;while(k<SIZE&&board[k][c]===board[r][c])k++;for(let i=r;i<k;i++)m.push([i,c]);r=k;}return m;}
+async function doCascade(){let matches=findMatches();while(matches.length){score+=matches.length*100;matches.forEach(([r,c])=>board[r][c]=null);render();await new Promise(r=>setTimeout(r,250));for(let c=0;c<SIZE;c++){let col=[];for(let r=SIZE-1;r>=0;r--)if(board[r][c])col.push(board[r][c]);for(let r=SIZE-1,i=0;r>=0;r--,i++)board[r][c]=i<col.length?col[i]:randFruit();}matches=findMatches();render();await new Promise(r=>setTimeout(r,200));}if(score>=target){level++;target+=800;moves+=10;alert('Level up! '+level);}if(moves<=0&&score<target){alert('Game over! '+score);initGame();}}
+function showHint(){let mm=findMatches();if(mm.length){selected={r:mm[0][0],c:mm[0][1]};render();setTimeout(()=>{selected=null;render();},800);}else alert('Shuffling!');}
+function initGame(){score=0;level=1;moves=25;target=1200;selected=null;createBoard();render();}
+initGame();
 </script>
 </body>
 </html>
