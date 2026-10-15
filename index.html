@@ -1,2 +1,46 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tropic Fruit Pop</title><style>body{background:#1e3a8a;color:#fff;font-family:system-ui;display:flex;flex-direction:column;align-items:center}h1{margin:16px}#board{width:360px;height:360px;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;background:rgba(0,0,0,.3);padding:8px;border-radius:16px}.cell{background:#fefce8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer}.cell.sel{outline:3px solid yellow}</style></head><body><h1>🍉 Tropic Fruit Pop ORIGINAL</h1><div id="info">Score: <b id="s">0</b> | Moves: <b id="m">25</b></div><div id="board"></div><button onclick="init()" style="margin:12px;padding:10px 20px;border-radius:20px">New Game</button><script>const F=['🍓','🍉','🍊','🍇'];let B=[],sel=null,sc=0,mv=25;function r(){return F[Math.floor(Math.random()*4)]}function mk(){B=[];for(let y=0;y<8;y++){let row=[];for(let x=0;x<8;x++){let f;do{f=r()}while((x>=2&&row[x-1]==f&&row[x-2]==f)||(y>=2&&B[y-1][x]==f&&B[y-2][x]==f));row.push(f)}B.push(row)}}function draw(){let d=document.getElementById('board');d.innerHTML='';for(let y=0;y<8;y++)for(let x=0;x<8;x++){let c=document.createElement('div');c.className='cell'+(sel&&sel.y==y&&sel.x==x?' sel':'');c.textContent=B[y][x];c.onclick=()=>click(y,x);d.appendChild(c)}document.getElementById('s').textContent=sc;document.getElementById('m').textContent=mv}function click(y,x){if(!sel){sel={y,x};draw();return}let dy=Math.abs(sel.y-y),dx=Math.abs(sel.x-x);if((dy==1&&dx==0)||(dy==0&&dx==1)){let t=B[sel.y][sel.x];B[sel.y][sel.x]=B[y][x];B[y][x]=t;mv--;check()}sel=null;draw()}function check(){for(let c=0;c<8;c++){for(let y=7;y>=0;y--)if(!B[y]||!B[y][c]){for(let k=y;k>0;k--)B[k][c]=B[k-1][c];B[0][c]=r()}}}function init(){sc=0;mv=25;sel=null;mk();draw()}init()</script></body></html>
+🍓 FRUIT FUSION QUEST 🍍
+Match the fruit. Discover the magic. Become the Fruit Master!
+
+Score
+0
+Moves
+24
+Level
+1
+Today's quest
+Collect 12 fruits (0/12)
+🏆
+Level 1: collect 12 fruits. Good luck!
+↻ New Quest
+✨ Hint
+🔊 Sound: On
+🌈 Your Fruit Journal
+Every quest is a fresh puzzle. Match three or more fruits in a row or column to collect them and earn points.
+
+🍓
+Berry
+🍋
+Lemon
+🍇
+Grapes
+🍊
+Orange
+🍏
+Apple
+🍉
+Melon
+🍍
+Pineapple
+🥝
+Kiwi
+🥭
+Mango
+💡 Golden Fruit: Match four or more fruits to create a glowing golden fruit. Match it to earn bonus points!
+🎯 How to play
+1. Select a fruit.
+2. Select a fruit next to it to swap.
+3. Make a line of 3 or more matching fruits.
+4. Complete your collection goal before moves run out.
+
+🌟 Tip: Look for matches near the bottom to create more falling-fruit combos.
+Fruit Fusion Quest • A playful original web puzzle • Progress is saved on this device
